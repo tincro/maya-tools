@@ -1,10 +1,11 @@
 import os
 import maya.cmds as cmds
-import maya.OpenMaya as om
 import maya.OpenMayaUI as omui
 
 from PySide2.QtCore import *
-from PySide2.QtWidgets import *
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, \
+    QLabel, QRadioButton, QListWidget, QComboBox, QAbstractItemView, \
+    QLineEdit, QPushButton, QMenu, QMenuBar, QWidgetAction
 
 from shiboken2 import wrapInstance
 
@@ -29,12 +30,21 @@ class BrowserWin(QWidget):
         self.mainLayout = QVBoxLayout()
         self.btnLayout = QHBoxLayout()
         self.radioLayout = QHBoxLayout()
+        #
+        # Act = QWidgetAction()
+        #
+        # # Build Menu for other options
+        # self.menuBar = QMenuBar()
+        # self.menu = QMenu("File")
+        # self.menu.addAction(Act)
+        # self.menuBar.addMenu(self.menu)
+        # self.mainLayout.addWidget(self.menu)
 
         # radio buttons load import
         self.radioLabel = QLabel("Action: ")
-        self.importBtn = QRadioButton("Import File")
-        self.openBtn = QRadioButton("Open File")
-        self.saveBtn = QRadioButton("Save File")
+        self.importRadioBtn = QRadioButton("Import File")
+        self.openRadioBtn = QRadioButton("Open File")
+        self.saveRadioBtn = QRadioButton("Save File")
 
         # Find asset directories to load from and populate the drop down
         self.fileType = QComboBox()
@@ -43,7 +53,11 @@ class BrowserWin(QWidget):
 
         # list of assets in self.list
         self.fileList = QListWidget()
-        self.__populate_list(self.fileList, directory=os.path.join(DIRECTORY, self.curr_cat))
+        self.fileList.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.__populate_list(
+            self.fileList,
+            directory=os.path.join(DIRECTORY, self.curr_cat)
+        )
 
         self.fileName = QLineEdit()
 
@@ -53,9 +67,9 @@ class BrowserWin(QWidget):
 
         # Add widgets to layouts
         self.radioLayout.addWidget(self.radioLabel)
-        self.radioLayout.addWidget(self.importBtn)
-        self.radioLayout.addWidget(self.openBtn)
-        self.radioLayout.addWidget(self.saveBtn)
+        self.radioLayout.addWidget(self.importRadioBtn)
+        self.radioLayout.addWidget(self.openRadioBtn)
+        self.radioLayout.addWidget(self.saveRadioBtn)
 
         self.mainLayout.addLayout(self.radioLayout)
 
@@ -71,16 +85,19 @@ class BrowserWin(QWidget):
         self.setLayout(self.mainLayout)
 
         # Set state of widgets
-        self.importBtn.toggle()
+        self.importRadioBtn.toggle()
         self.fileName.setPlaceholderText("file_name")
         self.fileName.setEnabled(False)
+        self.publishBtn.setEnabled(False)
 
         # Signals
         self.fileType.currentIndexChanged.connect(self.selectionChanged)
         self.loadBtn.clicked.connect(self.loadBtnCmd)
         self.publishBtn.clicked.connect(self.publishBtnCmd)
         self.closeBtn.clicked.connect(self.closeBtnCmd)
-        self.saveBtn.toggled.connect(self.onSaveToggled)
+        self.importRadioBtn.toggled.connect(self.onImportToggled)
+        self.openRadioBtn.toggled.connect(self.onOpenToggled)
+        self.saveRadioBtn.toggled.connect(self.onSaveToggled)
 
     def __populate_list(self, destination, directory=DIRECTORY):
         _dirs = os.listdir(directory)
@@ -91,23 +108,26 @@ class BrowserWin(QWidget):
     def selectionChanged(self):
         self.curr_cat = self.fileType.currentText()
         self.fileList.clear()
-        self.__populate_list(self.fileList, directory=os.path.join(DIRECTORY, self.curr_cat))
+        self.__populate_list(
+            self.fileList,
+            directory=os.path.join(DIRECTORY, self.curr_cat)
+        )
 
     def loadBtnCmd(self):
-        selected_file = self.fileList.currentItem()
-        asset_file = os.path.join(DIRECTORY, self.curr_cat, selected_file.text())
-
-        try:
-            if self.importBtn.isChecked() and selected_file.text() is not None:
+        if self.importRadioBtn.isChecked():
+            selected_files = self.fileList.selectedItems()
+            for _file in selected_files:
+                asset_file = os.path.join(DIRECTORY, self.curr_cat, _file.text())
                 cmds.file(asset_file, i=True)
-            elif self.openBtn.isChecked() and selected_file.text() is not None:
-                cmds.file(asset_file, o=True, force=True)
-        except AttributeError:
-            om.MGlobal.displayError("No file selected")
-            raise
+        elif self.openRadioBtn.isChecked():
+            selected_file = self.fileList.currentItem()
+            asset_file = os.path.join(DIRECTORY, self.curr_cat, selected_file.text())
+            cmds.file(asset_file, o=True, force=True)
+        else:
+            print("Did you mean to publish this asset?")
 
     def publishBtnCmd(self):
-        if self.saveBtn.isChecked() and self.fileName.text is not None:
+        if self.saveRadioBtn.isChecked() and self.fileName.text() is not None:
             path_to_save = os.path.join(DIRECTORY, self.curr_cat, self.fileName.text())
             cmds.file(rn="{}.ma".format(path_to_save))
             cmds.file(save=True)
@@ -121,7 +141,24 @@ class BrowserWin(QWidget):
         self.close()
 
     def onSaveToggled(self):
-        return self.fileName.setEnabled(not self.fileName.isEnabled())
+        items = self.fileList.selectedItems()
+        for item in items:
+            item.setSelected(False)
+        return self.fileName.setEnabled(not self.fileName.isEnabled()), \
+               self.publishBtn.setEnabled(not self.publishBtn.isEnabled())
+
+    def onImportToggled(self):
+        if self.importRadioBtn.isChecked():
+            return self.fileList.setSelectionMode(QAbstractItemView.ExtendedSelection)
+
+
+    def onOpenToggled(self):
+        if self.openRadioBtn.isChecked():
+            items = self.fileList.selectedItems()
+            items.pop()
+            for item in items:
+                item.setSelected(False)
+            return self.fileList.setSelectionMode(QAbstractItemView.SingleSelection)
 
 win = BrowserWin()
 win.show()
