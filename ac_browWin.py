@@ -30,15 +30,6 @@ class BrowserWin(QWidget):
         self.mainLayout = QVBoxLayout()
         self.btnLayout = QHBoxLayout()
         self.radioLayout = QHBoxLayout()
-        #
-        # Act = QWidgetAction()
-        #
-        # # Build Menu for other options
-        # self.menuBar = QMenuBar()
-        # self.menu = QMenu("File")
-        # self.menu.addAction(Act)
-        # self.menuBar.addMenu(self.menu)
-        # self.mainLayout.addWidget(self.menu)
 
         # radio buttons load import
         self.radioLabel = QLabel("Action: ")
