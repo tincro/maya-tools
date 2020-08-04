@@ -7,7 +7,7 @@ Also, assets can be published from this window, allowing ease for publication of
 <a href="https://github.com/tincro/maya-tools/blob/master/acscatternode.py">ac_scatternode.py</a> is a custom node I'm working on that is trying to replicate a similar function of the CopyToPoints Node in Houdini.
 Still a WIP.
 
-<a href="https://github.com/tincro/maya-tools/blob/master/ac_scatterCmd.py">ac_scatternode.py</a> is a custom command I'm working on that is trying to replicate a similar function of the CopyToPoints Node in Houdini. Currently, this is functionally working sans a couple issues.
+<a href="https://github.com/tincro/maya-tools/blob/master/ac_scatterCmd.py">ac_scatterCmd.py</a> is a custom command I'm working on that is trying to replicate a similar function of the CopyToPoints Node in Houdini. Currently, this is functionally working sans a couple issues.
 Still a WIP.
 
 
