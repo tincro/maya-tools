@@ -135,12 +135,12 @@ class BrowserWin(QWidget):
         items = self.fileList.selectedItems()
         for item in items:
             item.setSelected(False)
-        return self.fileName.setEnabled(not self.fileName.isEnabled()), \
-               self.publishBtn.setEnabled(not self.publishBtn.isEnabled())
+        self.fileName.setEnabled(not self.fileName.isEnabled())
+        self.publishBtn.setEnabled(not self.publishBtn.isEnabled())
 
     def onImportToggled(self):
         if self.importRadioBtn.isChecked():
-            return self.fileList.setSelectionMode(QAbstractItemView.ExtendedSelection)
+            self.fileList.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
 
     def onOpenToggled(self):
@@ -149,7 +149,7 @@ class BrowserWin(QWidget):
             items.pop()
             for item in items:
                 item.setSelected(False)
-            return self.fileList.setSelectionMode(QAbstractItemView.SingleSelection)
+            self.fileList.setSelectionMode(QAbstractItemView.SingleSelection)
 
 win = BrowserWin()
 win.show()

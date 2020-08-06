@@ -1,4 +1,5 @@
 import sys
+import maya.cmds as cmds
 import maya.OpenMaya as om
 import maya.OpenMayaMPx as ompx
 
@@ -11,6 +12,7 @@ class ACScatterCmd(ompx.MPxCommand):
         self.__selection = om.MSelectionList()
         self.__copyMesh = om.MObject()
         self.__vector = om.MVector()
+        self.__setsFn = om.MFnSet()
         self.__transformFn = om.MFnTransform()
         self.__dagNodeFn = om.MFnDagNode()
         self.__dagPath = om.MDagPath()
@@ -38,21 +40,16 @@ class ACScatterCmd(ompx.MPxCommand):
             pos = om.MVector(point)
 
             copy = self.__dagNodeFn.duplicate()
-            copy_dag = om.MDagPath.getAPathTo(copy, self.__dagPath)
+            arr = om.MDagPathArray()
+            om.MDagPath.getAllPathsTo(copy, arr)
+            path = om.MDagPath(arr[0])
 
-            self.__transformFn.setObject(copy_dag)
+            cmds.sets(path.partialPathName(), add="initialShadingGroup")
+
+            self.__transformFn.setObject(arr[0])
             self.__transformFn.setTranslation(pos, om.MSpace.kWorld)
 
             it.next()
-
-        # for pos in vert_dict.values():
-        #     print(pos)
-        #     dag_node_fn.duplicate()
-        #     new_path = om.MDagPath()
-        #     dag_node_fn.getPath(new_path)
-        #     transFn = om.MFnTransform(new_path)
-        #     transFn.setTranslation(pos, om.MSpace.kWorld)
-
 
 def initializePlugin(obj):
     plugin = ompx.MFnPlugin(
